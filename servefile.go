@@ -5,16 +5,18 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/mdp/qrterminal/v3"
 )
 
-const COLOR = "" // Bright Green
+const COLOR = "\033[93m" // Bright Green
 const RESET = "\033[0m"
 
 const LOWER_BLOCK = COLOR + "▄" + RESET
@@ -35,6 +37,7 @@ func init() {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
 	flag.Parse()
 	if file == "" {
 		fmt.Println("Need a file name. For help: serverfile -h")
@@ -42,15 +45,17 @@ func main() {
 	}
 
 	fileExists(file)
+
 	ips, err := externalIP()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
+	random_url_base := randSeq(6)
 	var ip_string strings.Builder
 	for _, ip := range ips {
-		ip_string.WriteString(fmt.Sprintf("http://%s:%d/%s\n\n", ip, port, filepath.Base(file)))
+		ip_string.WriteString(fmt.Sprintf("http://%s:%d/%s\n\n", ip, port, random_url_base))
 	}
 
 	config := qrterminal.Config{
@@ -65,7 +70,8 @@ func main() {
 	}
 	qrterminal.GenerateWithConfig(ip_string.String(), config)
 
-	http.HandleFunc(fmt.Sprintf("/%s", filepath.Base(file)), func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(fmt.Sprintf("/%s", random_url_base), func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filepath.Base(file)))
 		http.ServeFile(w, r, file)
 	})
 
@@ -74,6 +80,16 @@ func main() {
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
+}
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func logRequest(handler http.Handler) http.Handler {
