@@ -36,11 +36,16 @@ func init() {
 
 func main() {
 	flag.Parse()
+	if file == "" {
+		fmt.Println("Need a file name. For help: serverfile -h")
+		os.Exit(1)
+	}
 
 	fileExists(file)
 	ips, err := externalIP()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	var ip_string strings.Builder
@@ -81,7 +86,8 @@ func logRequest(handler http.Handler) http.Handler {
 func fileExists(file string) {
 	_, err := os.Open(file)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
 
