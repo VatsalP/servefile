@@ -16,7 +16,7 @@ import (
 	"github.com/mdp/qrterminal/v3"
 )
 
-const COLOR = "\033[93m" // Bright Green
+const COLOR = "\033[93m" // Yellow
 const RESET = "\033[0m"
 
 const LOWER_BLOCK = COLOR + "▄" + RESET
@@ -27,6 +27,7 @@ const DOUBLE_BLOCK = COLOR + "█" + RESET
 var port int
 var enable_ipv6 bool
 var file string
+var print_urls bool
 
 func init() {
 	flag.StringVar(&file, "file", "", "file to serve")
@@ -34,6 +35,7 @@ func init() {
 	flag.IntVar(&port, "port", 6066, "port to serve the file on, default: 6066")
 	flag.BoolVar(&enable_ipv6, "enable_ipv6", false, "Include ipv6 addresses, default: false")
 	flag.BoolVar(&enable_ipv6, "e", false, "(shorthand) Include ipv6 addresses, default: false")
+	flag.BoolVar(&print_urls, "p", false, "Print urls to terminal, default: false")
 }
 
 func main() {
@@ -67,6 +69,9 @@ func main() {
 		WhiteChar:      DOUBLE_BLOCK,
 		BlackWhiteChar: LOWER_BLOCK,
 		QuietZone:      1,
+	}
+	if print_urls {
+		fmt.Print(ip_string.String())
 	}
 	qrterminal.GenerateWithConfig(ip_string.String(), config)
 
