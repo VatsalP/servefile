@@ -1,4 +1,4 @@
-module github.com/vatsalp/servefile
+module github.com/VatsalP/servefile
 
 go 1.16
 
